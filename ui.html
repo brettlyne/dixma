@@ -7,18 +7,18 @@
 
 <div id="dixma-plugin">
   <link rel="stylesheet" href="styles.css">
-  <button id="start-game">Start Game</button>
+  <button onclick="sendMsg('start-game')">Start Game</button>
+  <br><br>
+  <button onclick="sendMsg('delete-pages')">Delete Player Pages</button>
 </div>
 
 
 <script>
-
+  const sendMsg = (msg) => {
+    parent.postMessage({ pluginMessage: { type: msg } }, "*");
+  }
   onmessage = (event) => {
     console.log("got this from the plugin code", event.data.pluginMessage)
   }
-
-  document.getElementById("start-game").onclick = () => {
-    parent.postMessage({ pluginMessage: { type: "start-game" } }, "*");
-  };
 
 </script>

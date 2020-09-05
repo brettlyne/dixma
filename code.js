@@ -40,6 +40,9 @@ figma.ui.onmessage = (msg) => {
             // actual game setup (creating boards, etc.)
         }
     }
+    if (msg.type === "delete-pages") {
+        deletePlayerPages();
+    }
 };
 const piecesAreReady = () => {
     dixmaBoardPage = figma.root.findChild((child) => child.name === "Dixma Board");
@@ -91,9 +94,9 @@ const updatePluginStateFromDocument = () => {
     const newPlayers = JSON.parse(figma.root.getPluginData('players'));
     const newGameState = figma.root.getPluginData('gameState');
     const newCurrentStorytellerIndex = figma.root.getPluginData('currentStorytellerIndex');
-    console.log(newPlayers);
-    console.log(newGameState);
-    console.log(newCurrentStorytellerIndex);
+    // console.log(newPlayers);
+    // console.log(newGameState);
+    // console.log(newCurrentStorytellerIndex);
     if (players !== newPlayers) {
         players = newPlayers;
         // TODO populate playerPages
@@ -104,6 +107,7 @@ const updatePluginStateFromDocument = () => {
 };
 const createPlayerPage = (player) => {
     const playerPage = figma.createPage();
+    playerPage.setPluginData('isPlayerPage', 'true');
     playerPage.name = player.name;
     const customPlayerBoard = createPlayerBoard(player);
     playerPage.appendChild(customPlayerBoard);
@@ -114,7 +118,7 @@ const createPlayerPage = (player) => {
     // dealFirstHand(playerPage, customPlayerBoard);
     return playerPage;
 };
-function createPlayerBoard(player) {
+const createPlayerBoard = (player) => {
     const customPlayerBoard = playerPageTemplate.clone();
     // Customize page with player name
     const playerNameElement = customPlayerBoard.findOne((child) => child.name === "Player Name Text");
@@ -137,7 +141,20 @@ function createPlayerBoard(player) {
         votingToken.fills = votingTokenFills;
     });
     return customPlayerBoard;
-}
+};
+const deletePlayerPages = () => {
+    figma.root.children.forEach(page => {
+        if (page.getPluginData("isPlayerPage") === "true") {
+            try {
+                page.remove();
+            }
+            catch (error) {
+                figma.notify(`Could not remove player page: ${page.name} –> Try again or r  emove manually.`);
+                console.log(error);
+            }
+        }
+    });
+};
 // HELPER FUNCTIONS
 const hexToRGB = (hex) => {
     const h = (hex.charAt(0) == "#") ? hex.substring(1, 7) : hex;
