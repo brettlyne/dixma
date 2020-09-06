@@ -225,11 +225,11 @@ const dealFirstHand = (playerPage, customPlayerBoard) => {
 
 const getRandomImage = () => {
     const deckImages = deckPage.children;
-    const randomImage = deckImages[
+    let randomImage = deckImages[
         Math.floor(Math.random() * deckImages.length)
     ] as RectangleNode;
     if (randomImage.getPluginData("dealt") === "true") {
-        getRandomImage();
+        randomImage = getRandomImage();
     } else {
         randomImage.setPluginData("dealt", "true");
     }
