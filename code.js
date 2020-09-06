@@ -8,7 +8,7 @@ let playerPageTemplate;
 let cardPlayFrame;
 let playersFrame;
 let storytellerBadgeNode;
-// game state setup
+// constants
 const phases = {
     NO_GAME: "no active game",
     PICKING: "players are picking cards",
@@ -23,6 +23,10 @@ const COLORS_AS_HEX = {
     purple: "800080", black: "000000", silver: "C0C0C0", white: "FFFFFF"
 };
 const VOTING_TOKENS_NAME = "Voting Tokens";
+const CARD_NAME = "Card";
+const CARD_SLOT_PADDING = 5;
+const CARD_SIZE = 150;
+// game state variables
 let players;
 let currentStorytellerIndex = 0; // player index of current storyteller
 let playerPages;
@@ -113,9 +117,9 @@ const createPlayerPage = (player) => {
     playerPage.appendChild(customPlayerBoard);
     customPlayerBoard.locked = true;
     // TODO
-    // moveVotingTokens(playerPage, customPlayerBoard);
-    // setUpSelectionAreas(playerPage, customPlayerBoard);
-    // dealFirstHand(playerPage, customPlayerBoard);
+    moveVotingTokens(playerPage, customPlayerBoard);
+    setUpSelectionAreas(playerPage, customPlayerBoard);
+    dealFirstHand(playerPage, customPlayerBoard);
     return playerPage;
 };
 const createPlayerBoard = (player) => {
@@ -125,13 +129,13 @@ const createPlayerBoard = (player) => {
     figma
         .loadFontAsync({ family: "American Typewriter", style: "Regular" })
         .then(() => (playerNameElement.characters = player.name));
-    // TODO
-    // Change color of player token 
-    // MAYBE INSTEAD OF THIS GRAB DUPLICATE WITH CORRECT ANIMAL FROM COMPONENTS PAGE
-    // const playerTokenElement = customPlayerBoard.findOne((child) => child.name === "circle") as RectangleNode;
-    // const playerTokenFills = clone(playerTokenElement.fills);
-    // playerTokenFills[0].color = COLORS_AS_HEX[player.color];
-    // playerTokenElement.fills = playerTokenFills;
+    // Copy in player token from Components Page
+    const playerTokensFrame = componentsPage.findChild((child) => child.name === "Player Tokens");
+    const playerToken = playerTokensFrame.findChild((child) => child.name === player.color).clone();
+    playerToken.resize(40, 40);
+    playerToken.x = 78;
+    playerToken.y = 78;
+    customPlayerBoard.appendChild(playerToken);
     // Change color of voting tokens
     const votingTokens = customPlayerBoard.findChild((child) => child.name === VOTING_TOKENS_NAME);
     votingTokens.children.forEach((child) => {
@@ -142,6 +146,64 @@ const createPlayerBoard = (player) => {
     });
     return customPlayerBoard;
 };
+// Move the voting tokens out of the component so they can be easily dragged
+const moveVotingTokens = (playerPage, customPlayerBoard) => {
+    const votingTokens = customPlayerBoard.findOne((child) => child.name === VOTING_TOKENS_NAME);
+    const votingTokensPosition = votingTokens.absoluteTransform;
+    const votingTokensClone = votingTokens.clone();
+    votingTokens.visible = false;
+    playerPage.appendChild(votingTokensClone);
+    votingTokensClone.visible = true;
+    votingTokensClone.x = votingTokensPosition[0][2];
+    votingTokensClone.y = votingTokensPosition[1][2];
+};
+// Set up areas on player board to select cards & tokens by dropping them in a frame
+function setUpSelectionAreas(playerPage, customPlayerBoard) {
+    const cardSelectionArea = figma.createFrame();
+    const selectedCard = customPlayerBoard.findChild((child) => child.name === "Selected card");
+    const cardFills = clone(cardSelectionArea.fills);
+    cardFills[0].opacity = 0;
+    cardSelectionArea.fills = cardFills;
+    cardSelectionArea.name = "Card Selection Area";
+    cardSelectionArea.resize(selectedCard.width, selectedCard.height);
+    cardSelectionArea.x = selectedCard.absoluteTransform[0][2];
+    cardSelectionArea.y = selectedCard.absoluteTransform[1][2];
+    playerPage.appendChild(cardSelectionArea);
+    const tokenSelectionArea = figma.createFrame();
+    const selectedToken = customPlayerBoard.findChild((child) => child.name === "Selected voting token");
+    tokenSelectionArea.fills = cardFills;
+    tokenSelectionArea.name = "Token Selection Area";
+    tokenSelectionArea.cornerRadius = 10;
+    tokenSelectionArea.resize(selectedToken.width, selectedToken.height);
+    tokenSelectionArea.x = selectedToken.absoluteTransform[0][2];
+    tokenSelectionArea.y = selectedToken.absoluteTransform[1][2];
+    playerPage.appendChild(tokenSelectionArea);
+}
+const dealFirstHand = (playerPage, customPlayerBoard) => {
+    const cardSlots = customPlayerBoard.findAll((child) => child.name === "Card Inner Placeholder");
+    for (let i = 0; i < 6; i++) {
+        let randomImage = getRandomImage();
+        const cardSlot = cardSlots[i];
+        const cardSlotPosition = cardSlot.absoluteTransform;
+        playerPage.appendChild(randomImage);
+        // Scale image to fit card slots
+        randomImage = scaleImage(randomImage, CARD_SIZE, CARD_SIZE);
+        randomImage.x = cardSlotPosition[0][2] + CARD_SLOT_PADDING;
+        randomImage.y = cardSlotPosition[1][2] + CARD_SLOT_PADDING;
+        randomImage.name = CARD_NAME;
+    }
+};
+const getRandomImage = () => {
+    const deckImages = deckPage.children;
+    const randomImage = deckImages[Math.floor(Math.random() * deckImages.length)];
+    if (randomImage.getPluginData("dealt") === "true") {
+        getRandomImage();
+    }
+    else {
+        randomImage.setPluginData("dealt", "true");
+    }
+    return randomImage.clone();
+};
 const deletePlayerPages = () => {
     figma.root.children.forEach(page => {
         if (page.getPluginData("isPlayerPage") === "true") {
@@ -149,7 +211,7 @@ const deletePlayerPages = () => {
                 page.remove();
             }
             catch (error) {
-                figma.notify(`Could not remove player page: ${page.name} –> Try again or r  emove manually.`);
+                figma.notify(`Could not remove player page: ${page.name} –> Try again or remove manually.`);
                 console.log(error);
             }
         }
@@ -164,6 +226,19 @@ const hexToRGB = (hex) => {
         b: parseInt(h.substring(4, 6), 16) / 255
     };
 };
-function clone(value) {
+const clone = (value) => {
     return JSON.parse(JSON.stringify(value));
-}
+};
+const scaleImage = (image, maxWidth, maxHeight) => {
+    if (image.width > maxWidth) {
+        const newHeight = image.height / (image.width / maxWidth);
+        if (newHeight > maxHeight) {
+            const newWidth = maxWidth / (newHeight / maxHeight);
+            image.resize(newWidth, maxHeight);
+        }
+        else {
+            image.resize(maxWidth, newHeight);
+        }
+    }
+    return image;
+};
