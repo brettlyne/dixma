@@ -39,9 +39,9 @@ figma.ui.onmessage = (msg) => {
             // start the game
             gameState = phases.PICKING;
             updateDocumentStateFromPlugin();
-            // console.log(players);
-            updatePluginStateFromDocument();
-            // actual game setup (creating boards, etc.)
+            players.forEach(player => {
+                createPlayerPage(player);
+            });
         }
     }
     if (msg.type === "delete-pages") {
@@ -101,13 +101,9 @@ const updatePluginStateFromDocument = () => {
     // console.log(newPlayers);
     // console.log(newGameState);
     // console.log(newCurrentStorytellerIndex);
-    if (players !== newPlayers) {
-        players = newPlayers;
-        // TODO populate playerPages
-        players.forEach(player => {
-            createPlayerPage(player);
-        });
-    }
+    // if (players !== newPlayers) {
+    //     players = newPlayers;
+    // }
 };
 const createPlayerPage = (player) => {
     const playerPage = figma.createPage();
@@ -116,7 +112,6 @@ const createPlayerPage = (player) => {
     const customPlayerBoard = createPlayerBoard(player);
     playerPage.appendChild(customPlayerBoard);
     customPlayerBoard.locked = true;
-    // TODO
     moveVotingTokens(playerPage, customPlayerBoard);
     setUpSelectionAreas(playerPage, customPlayerBoard);
     dealFirstHand(playerPage, customPlayerBoard);
@@ -182,7 +177,7 @@ function setUpSelectionAreas(playerPage, customPlayerBoard) {
 const dealFirstHand = (playerPage, customPlayerBoard) => {
     const cardSlots = customPlayerBoard.findAll((child) => child.name === "Card Inner Placeholder");
     for (let i = 0; i < 6; i++) {
-        let randomImage = getRandomImage();
+        let randomImage = getRandomImageFromDeck();
         const cardSlot = cardSlots[i];
         const cardSlotPosition = cardSlot.absoluteTransform;
         playerPage.appendChild(randomImage);
@@ -193,11 +188,11 @@ const dealFirstHand = (playerPage, customPlayerBoard) => {
         randomImage.name = CARD_NAME;
     }
 };
-const getRandomImage = () => {
+const getRandomImageFromDeck = () => {
     const deckImages = deckPage.children;
     let randomImage = deckImages[Math.floor(Math.random() * deckImages.length)];
     if (randomImage.getPluginData("dealt") === "true") {
-        randomImage = getRandomImage();
+        randomImage = getRandomImageFromDeck();
     }
     else {
         randomImage.setPluginData("dealt", "true");
