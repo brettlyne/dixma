@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import './ui.css'
+import './ui.scss'
 
 declare function require(path: string): any
 
