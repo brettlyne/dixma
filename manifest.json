@@ -3,5 +3,5 @@
   "id": "883085077745543030",
   "api": "1.0.0",
   "main": "code.js",
-  "ui": "ui.html"
+  "ui": "dist/ui.html"
 }
