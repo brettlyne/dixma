@@ -2,6 +2,6 @@
   "name": "dixma",
   "id": "883085077745543030",
   "api": "1.0.0",
-  "main": "code.js",
-  "ui": "dist/ui.html"
+  "main": "./dist/code.js",
+  "ui": "./dist/ui.html"
 }

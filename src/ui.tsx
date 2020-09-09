@@ -1,35 +1,26 @@
 import * as React from 'react'
+import { useState } from 'react'
 import * as ReactDOM from 'react-dom'
-import './ui.scss'
 
-declare function require(path: string): any
+import WelcomeScreen from './ui/WelcomeScreen'
+import './ui.scss';
 
-class App extends React.Component {
-    textbox: HTMLInputElement
-
-    countRef = (element: HTMLInputElement) => {
-        if (element) element.value = '5'
-        this.textbox = element
-    }
-
-    onCreate = () => {
-        const count = parseInt(this.textbox.value, 10)
-        parent.postMessage({ pluginMessage: { type: 'create-rectangles', count } }, '*')
-    }
-
-    onCancel = () => {
-        parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
-    }
-
-    render() {
-        return <div>
-            <img src={require('./logo.svg')} />
-            <h2>Rectangle Creator</h2>
-            <p>Count: <input ref={this.countRef} /></p>
-            <button id="create" onClick={this.onCreate}>Create</button>
-            <button onClick={this.onCancel}>Cancel</button>
-        </div>
-    }
+const IMG_PATH = "https://brettlyne.github.io/dixma/";
+const PHASES = {
+    NO_GAME: "no active game",
+    PICKING: "players are picking cards",
+    VOTING: "players are voting",
+    SCORING: "players are moving their tokens on the score tracking board"
 }
+
+const App = () => {
+    const [gamePhase, setGamePhase] = useState(PHASES.NO_GAME);
+    return (
+        <div>
+            <img src={`${IMG_PATH}dixma-plugin-header-logo.png`} alt="dixma logo" />
+            {gamePhase === PHASES.NO_GAME && <WelcomeScreen />}
+        </div>
+    );
+};
 
 ReactDOM.render(<App />, document.getElementById('react-page'))

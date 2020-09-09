@@ -5,6 +5,7 @@
       "./node_modules/@types",
       "./node_modules/@figma"
     ],
-    "jsx": "react"
+    "jsx": "react",
+    "moduleResolution": "Node"
   }
 }

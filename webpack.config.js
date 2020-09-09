@@ -10,8 +10,8 @@ module.exports = (env, argv) => ({
 
     entry: {
         // ui: './src/ui.ts', // The entry point for your UI code
-        "ui": "./src/ui.tsx", // The entry point for your UI code
-        // code: './src/code.ts', // The entry point for your plugin code
+        ui: "./src/ui.tsx", // The entry point for your UI code
+        code: './src/code.ts', // The entry point for your plugin code
     },
 
     module: {
@@ -48,6 +48,7 @@ module.exports = (env, argv) => ({
             filename: 'ui.html',
             inlineSource: '.(js)$',
             chunks: ['ui'],
+            cache: false
         }),
         new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
     ],

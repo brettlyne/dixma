@@ -1,5 +1,21 @@
-$body-color: red;
-
 body {
-    background: $body-color;
+    background: url("https://brettlyne.github.io/dixma/dixma-plugin-background@2x.jpg");
+    background-size: cover;
+    margin: 0;
+    font-family: American Typewriter;
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.label {
+    font-family: Beirut;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.phase-instructions {
+    font-size: 14px;
+    line-height: 17px;
 }
