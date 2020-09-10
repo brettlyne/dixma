@@ -3,9 +3,9 @@ import { useState } from 'react'
 import * as ReactDOM from 'react-dom'
 
 import WelcomeScreen from './ui/WelcomeScreen'
-import './ui.scss';
+import PickingCards from './ui/PickingCards'
+import './styles.scss';
 
-const IMG_PATH = "https://brettlyne.github.io/dixma/";
 const PHASES = {
     NO_GAME: "no active game",
     PICKING: "players are picking cards",
@@ -17,8 +17,12 @@ const App = () => {
     const [gamePhase, setGamePhase] = useState(PHASES.NO_GAME);
     return (
         <div>
-            <img src={`${IMG_PATH}dixma-plugin-header-logo.png`} alt="dixma logo" />
+            <img
+                style={{ width: '100%' }}
+                src={`https://brettlyne.github.io/dixma/dixma-plugin-header-logo.png`} alt="dixma logo"
+            />
             {gamePhase === PHASES.NO_GAME && <WelcomeScreen />}
+            {gamePhase === PHASES.PICKING && <PickingCards />}
         </div>
     );
 };

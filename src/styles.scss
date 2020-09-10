@@ -1,0 +1,158 @@
+* {
+    font-family: Solway;
+    font-size: 16px;
+    line-height: 20px;
+    letter-spacing: -0.01em;
+    color: #000000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+strong {
+    font-weight: 500;
+}
+
+body {
+    background: url("https://brettlyne.github.io/dixma/dixma-plugin-background@2x.jpg");
+    background-size: cover;
+    margin: 0;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+ol {
+    padding-left: 16px;
+    margin: 0;
+    li {
+        padding-left: 8px;
+        margin-bottom: 8px;
+    }
+}
+
+button {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    font-family: Averia Sans Libre;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 20px;
+    text-align: center;
+    color: #ffffff;
+    padding-top: 6px;
+    padding-bottom: 8px;
+    width: 100%;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    background: #ee2c4c;
+    &:hover {
+        background: #de0327;
+    }
+}
+
+a {
+    font-weight: 500;
+    color: #3c95c8;
+    &:hover {
+        color: #277bab;
+    }
+    &.destructive {
+        color: #f20000;
+        &:hover {
+            color: #de0327;
+        }
+    }
+}
+
+.header {
+    font-family: "Averia Sans Libre";
+    font-style: normal;
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 20px;
+    letter-spacing: 0.01em;
+}
+
+.phase-instructions,
+.phase-instructions strong {
+    font-size: 14px;
+    line-height: 17px;
+}
+
+.ui-content {
+    padding: 16px;
+}
+
+// SCREENS
+.welcome-message {
+    font-size: 18px;
+    line-height: 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.table-headers {
+    display: flex;
+    justify-content: space-between;
+    margin-right: 12px;
+}
+
+.player-table {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+
+    .player-row {
+        display: flex;
+        height: 30px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        &:last-of-type {
+            border: none;
+        }
+
+        .color {
+            border: 1px solid rgba(0, 0, 0, 0.16);
+            width: 30px;
+            height: 29px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .name {
+            flex: 1;
+            padding: 5px;
+        }
+
+        .status {
+            width: 48px;
+            padding-top: 2px;
+            img {
+                height: 24px;
+            }
+        }
+    }
+}
+
+.action-status {
+    text-align: center;
+}
+
+.settings-button {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: pointer;
+    &:hover {
+        transform: translateX(-50%) scale(1.06);
+    }
+}
