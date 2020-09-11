@@ -4,13 +4,13 @@ import { useState } from 'react'
 import PlayerRow from './PlayerRow'
 import Settings from './Settings'
 
-const PickingCards = ({ pluginAction, players }) => {
+const Voting = ({ pluginAction, players }) => {
 
     const [settingsOpen, setSettingsOpen] = useState(false);
 
     let allPlayersReady = true;
     for (let i = 0; i < players.length; i++) {
-        if (players[i].status.indexOf('picking-card') >= 0) {
+        if (players[i].status.indexOf('voting') >= 0) {
             allPlayersReady = false;
             break;
         }
@@ -26,10 +26,9 @@ const PickingCards = ({ pluginAction, players }) => {
             }
             <div className="ui-content">
                 <p className="phase-instructions">
-                    <strong>Storyteller:</strong> give a clue <br />
-                    <strong>Everyone:</strong> pick a card
-            </p>
-                <div style={{ height: "8px" }}></div>
+                    <strong>Everyone except storyteller:</strong> vote
+                </p>
+                <div style={{ height: "28px" }}></div>
 
                 <div className="table-headers">
                     <p className="header">Players</p>
@@ -48,8 +47,8 @@ const PickingCards = ({ pluginAction, players }) => {
 
                 <div style={{ height: "16px" }}></div>
                 {allPlayersReady ?
-                    <button onClick={() => pluginAction('reveal-cards')} className='centered'>Reveal Cards</button> :
-                    <p className="action-status">You can reveal cards when <br /> all players are ready.</p>
+                    <button onClick={() => pluginAction('reveal-tokens')} className='centered'>Reveal Voting Tokens</button> :
+                    <p className="action-status">You can reveal voting tokens <br />when all players are ready.</p>
                 }
 
                 <img
@@ -65,5 +64,5 @@ const PickingCards = ({ pluginAction, players }) => {
     );
 };
 
-export default PickingCards;
+export default Voting;
 

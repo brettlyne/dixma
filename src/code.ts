@@ -11,7 +11,8 @@ let playersFrame;
 let storytellerBadgeNode;
 
 // constants
-const phases = {
+const PHASES = {
+    PIECES_MISSING: "required game elements not present in file",
     NO_GAME: "no active game",
     PICKING: "players are picking cards",
     VOTING: "players are voting",
@@ -29,27 +30,48 @@ const CARD_NAME = "Card";
 const CARD_SLOT_PADDING = 5;
 const CARD_SIZE = 150;
 // game state variables
-let players;
+let players = [];
+let playerNodes = [];
 let currentStorytellerIndex = 0; // player index of current storyteller
-let playerPages;
-let gameState = phases.NO_GAME;
+let gamePhase = PHASES.NO_GAME;
 
-// here is where we should check for an existing game on load
 
 // handle messages from plugin UI
 figma.ui.onmessage = (msg) => {
+    if (msg.type === "testing") {
+        resetTokens();
+    }
     if (msg.type === "start-game") {
-        if (gameState === phases.NO_GAME && piecesAreReady() && playersAreReady()) {
+        if (gamePhase === PHASES.NO_GAME && piecesAreReady() && playersAreReady()) {
             // start the game
-            gameState = phases.PICKING;
-            updateDocumentStateFromPlugin();
+            gamePhase = PHASES.PICKING;
             players.forEach(player => {
                 createPlayerPage(player);
             });
+            populatePlayerNodes();
+            updateDocumentStateFromPlugin();
         }
     }
-    if (msg.type === "delete-pages") {
-        deletePlayerPages();
+    if (msg.type === "reveal-cards") {
+        moveCardsToGameBoard();
+    }
+    if (msg.type === "reveal-tokens") {
+        moveTokensToGameBoard();
+    }
+    if (msg.type === "new-round") {
+        clearCardsFromPlayArea();
+        dealNewCards();
+        resetTokens();
+        nextStoryteller();
+        gamePhase = PHASES.PICKING;
+        updateDocumentStateFromPlugin();
+    }
+    if (msg.type === "reset-game") {
+        resetGame();
+    }
+    if (msg.type === "reset-game-and-clear-players") {
+        resetGame();
+        clearPlayerNames();
     }
 
 }
@@ -100,20 +122,75 @@ const playersAreReady = () => {
 
 const updateDocumentStateFromPlugin = () => {
     figma.root.setPluginData("players", JSON.stringify(players));
-    figma.root.setPluginData("gameState", gameState);
+    figma.root.setPluginData("gamePhase", gamePhase);
     figma.root.setPluginData("currentStorytellerIndex", `${currentStorytellerIndex}`);
 };
 
 const updatePluginStateFromDocument = () => {
     const newPlayers = JSON.parse(figma.root.getPluginData('players'));
-    const newGameState = figma.root.getPluginData('gameState');
-    const newCurrentStorytellerIndex = figma.root.getPluginData('currentStorytellerIndex');
-    // console.log(newPlayers);
-    // console.log(newGameState);
-    // console.log(newCurrentStorytellerIndex);
-    // if (players !== newPlayers) {
-    //     players = newPlayers;
-    // }
+    const newGamePhase = figma.root.getPluginData('gamePhase');
+    const newCurrentStorytellerIndex = parseInt(figma.root.getPluginData('currentStorytellerIndex'));
+
+    if (
+        gamePhase !== newGamePhase ||
+        currentStorytellerIndex !== newCurrentStorytellerIndex
+    ) {
+        gamePhase = newGamePhase
+        currentStorytellerIndex = newCurrentStorytellerIndex;
+    }
+
+    if (!deepEqual(players, newPlayers)) {
+        players = newPlayers;
+        populatePlayerNodes();
+    }
+
+    const playersWithStatus = getPlayersWithStatus();
+
+    figma.ui.postMessage({
+        type: 'GAME_STATE',
+        players: playersWithStatus,
+        gamePhase,
+        currentStorytellerIndex
+    });
+}
+
+const populatePlayerNodes = () => {
+    playerNodes = players.map(player => {
+        const page = figma.root.findChild((child) => child.name === player.name);
+        const selectedCardArea = page.findOne((child) => child.name === "Card Selection Area") as FrameNode;
+        const selectedTokenArea = page.findOne((child) => child.name === "Token Selection Area") as FrameNode;
+        return { page, selectedCardArea, selectedTokenArea };
+    });
+}
+
+const getPlayersWithStatus = () => {
+    return players.map((player, i) => {
+        const isStoryteller = (i === currentStorytellerIndex);
+        const playerNode = playerNodes[i];
+        let status;
+
+        if (gamePhase === PHASES.PICKING) {
+            const selectedCard = playerNode.selectedCardArea.findChild((child) => child.name === CARD_NAME);
+            status = (selectedCard ? "done-with-action" : "picking-card");
+            if (isStoryteller) {
+                status = "storyteller-" + status;
+            }
+        }
+        if (gamePhase === PHASES.VOTING) {
+
+            if (isStoryteller) {
+                status = 'storyteller'
+            } else {
+                const selectedToken = playerNode.selectedTokenArea.findChild((child) => child.name === "Voting Token");
+                status = (selectedToken ? "done-with-action" : "voting");
+            }
+        }
+        if (gamePhase === PHASES.SCORING) {
+            status = (isStoryteller ? 'storyteller-scoring' : 'scoring')
+        }
+        return { ...player, status };
+    });
+
 }
 
 const createPlayerPage = (player) => {
@@ -217,6 +294,29 @@ const dealFirstHand = (playerPage, customPlayerBoard) => {
     }
 }
 
+const dealNewCards = () => {
+    playerNodes.forEach(node => {
+        const page = node.page;
+        const cards = page.findChildren((child) => child.name === CARD_NAME);
+        const cardSlots = page.findAll((child) => child.name === "Card Inner Placeholder");
+
+        cards.forEach((card, index) => {
+            const cardSlot = cardSlots[index] as InstanceNode;
+            const cardSlotPosition = cardSlot.absoluteTransform;
+            card.x = cardSlotPosition[0][2] + CARD_SLOT_PADDING;
+            card.y = cardSlotPosition[1][2] + CARD_SLOT_PADDING;
+        });
+
+        const firstCardSlot = cardSlots[5].absoluteTransform;
+        let newImage = getRandomImageFromDeck();
+        page.appendChild(newImage);
+        newImage = scaleImage(newImage, CARD_SIZE, CARD_SIZE);
+        newImage.x = firstCardSlot[0][2] + CARD_SLOT_PADDING;
+        newImage.y = firstCardSlot[1][2] + CARD_SLOT_PADDING;
+        newImage.name = CARD_NAME;
+    })
+}
+
 const getRandomImageFromDeck = () => {
     const deckImages = deckPage.children;
     let randomImage = deckImages[
@@ -230,6 +330,78 @@ const getRandomImageFromDeck = () => {
     return randomImage.clone();
 }
 
+const moveCardsToGameBoard = () => {
+    let cardsToMove = playerNodes.map(node => (
+        node.selectedCardArea.findChild((child) => child.name === CARD_NAME) as RectangleNode
+    ))
+
+    let allPlayersAreReady = true;
+    let shuffledIndices = []
+    for (let i = 0; i < cardsToMove.length; i++) {
+        shuffledIndices.push(i);
+        if (!cardsToMove[i]) {
+            allPlayersAreReady = false;
+            break;
+        }
+    }
+    shuffledIndices = shuffleArray(shuffledIndices);
+
+    if (allPlayersAreReady) {
+        cardsToMove.forEach((selectedCard, index) => {
+            placeCardInGameBoard(selectedCard, shuffledIndices[index]);
+        });
+        gamePhase = PHASES.VOTING;
+        updateDocumentStateFromPlugin();
+    } else {
+        figma.notify("Not all players have selected a card.");
+    }
+}
+
+const moveTokensToGameBoard = () => {
+    const tokensToMove = [];
+    let allReady = true;
+    for (let i = 0; i < playerNodes.length; i++) {
+        if (currentStorytellerIndex === i) continue; // storyteller does not vote
+        const selectedTokenArea = playerNodes[i].selectedTokenArea;
+        const token = selectedTokenArea.findChild((child) => child.name === "Voting Token");
+        if (token) {
+            tokensToMove.push(token);
+        } else {
+            allReady = false;
+            break;
+        }
+    }
+    if (allReady) {
+        tokensToMove.forEach((token, i) => { placeTokenInGameBoard(token, i); });
+        gamePhase = PHASES.SCORING;
+        updateDocumentStateFromPlugin();
+    } else {
+        figma.notify("Not all players have voted.");
+    }
+}
+
+const CARDS_X_OFFSET = 65;
+const CARDS_Y_OFFSET = 90;
+const CARDS_COL_WIDTH = 188;
+const CARDS_ROW_HEIGHT = 220;
+const CARDS_SIZE = 160;
+
+const placeCardInGameBoard = (card, cardIndex) => {
+    card.x = CARDS_X_OFFSET + (cardIndex % 4) * CARDS_COL_WIDTH + (CARDS_SIZE - card.width) / 2;
+    card.y =
+        CARDS_Y_OFFSET +
+        Math.floor(cardIndex / 4) * CARDS_ROW_HEIGHT +
+        (CARDS_SIZE - card.height) / 2;
+    cardPlayFrame.appendChild(card);
+}
+
+const placeTokenInGameBoard = (token, i) => {
+    const voteIdx = parseInt(token.children[0].characters) - 1;
+    token.x = CARDS_X_OFFSET + (voteIdx % 4) * CARDS_COL_WIDTH + (20 * (i % 7));
+    token.y = (CARDS_Y_OFFSET + Math.floor(voteIdx / 4) * CARDS_ROW_HEIGHT + (20 * i)) - (80 * Math.floor(i / 7));
+    cardPlayFrame.appendChild(token);
+}
+
 const deletePlayerPages = () => {
     figma.root.children.forEach(page => {
         if (page.getPluginData("isPlayerPage") === "true") {
@@ -237,10 +409,82 @@ const deletePlayerPages = () => {
                 page.remove()
             } catch (error) {
                 figma.notify(`Could not remove player page: ${page.name} –> Try again or remove manually.`);
+                console.log(`Could not remove player page: ${page.name} –> Try again or remove manually.`);
                 console.log(error);
             }
         }
     })
+}
+
+const clearCardsFromPlayArea = () => {
+    cardPlayFrame.children.forEach((child) => {
+        if (child.name === CARD_NAME) {
+            child.remove();
+        }
+    });
+}
+
+const resetTokens = () => {
+    const tokensOnBoard = cardPlayFrame.findAll((child) => child.name === "Voting Token");
+    tokensOnBoard.forEach(token => { token.remove() });
+
+    playerNodes.forEach(node => {
+        const page = node.page;
+        const VotingTokensFrames = page.findChildren(child => child.name === "Voting Tokens")
+        VotingTokensFrames.forEach(frame => { frame.remove() });
+
+        const tokensInUse = page.findAll((child) => child.name === "Voting Token");
+        tokensInUse.forEach(token => {
+            if (token.parent.type === 'PAGE' || token.parent.visible) {
+                token.remove()
+            }
+        });
+
+        const customPlayerBoard = page.findChild((child) => child.name === "Player Page Template");
+        moveVotingTokens(page, customPlayerBoard);
+    })
+}
+
+const nextStoryteller = () => {
+    currentStorytellerIndex = (currentStorytellerIndex + 1) % players.length;
+}
+
+const resetDealtCards = () => {
+    deckPage.children.forEach((image) => image.setPluginData("dealt", "false"));
+}
+
+const clearPlayerNames = () => {
+    playersFrame.children.forEach((child) => {
+        // Ignore instruction text nodes, we only need to look at the players
+        if (child.type === "INSTANCE") {
+            const playerName = child.findChild(
+                (child) => child.name === "player name"
+            ) as TextNode;
+            figma
+                .loadFontAsync({ family: "Roboto Slab", style: "Regular" })
+                .then(() => (playerName.characters = EMPTY_PLAYER_STRING));
+        }
+    });
+}
+
+const resetGame = () => {
+    gamePhase = PHASES.NO_GAME;
+    players = [];
+    playerNodes = [];
+    currentStorytellerIndex = 0;
+    updateDocumentStateFromPlugin();
+
+    clearCardsFromPlayArea();
+    deletePlayerPages();
+    resetDealtCards();
+}
+
+
+// RUNS ON LAUNCH - check for game state every second
+if (piecesAreReady()) {
+    const interval = setInterval(() => {
+        updatePluginStateFromDocument()
+    }, 1000);
 }
 
 
@@ -270,4 +514,38 @@ const scaleImage = (image, maxWidth, maxHeight) => {
         }
     }
     return image;
+}
+
+function deepEqual(object1, object2) {
+    const keys1 = Object.keys(object1);
+    const keys2 = Object.keys(object2);
+    if (keys1.length !== keys2.length) {
+        return false;
+    }
+    for (const key of keys1) {
+        const val1 = object1[key];
+        const val2 = object2[key];
+        const areObjects = isObject(val1) && isObject(val2);
+        if (
+            areObjects && !deepEqual(val1, val2) ||
+            !areObjects && val1 !== val2
+        ) {
+            return false;
+        }
+    }
+    return true;
+}
+function isObject(object) {
+    return object != null && typeof object === 'object';
+}
+
+//  Durstenfeld Shuffle, copied from Stack Overflow
+function shuffleArray(array) {
+    let arrayCopy = clone(array);
+    for (let i = arrayCopy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arrayCopy[i], arrayCopy[j]] = [arrayCopy[j], arrayCopy[i]];
+    }
+
+    return arrayCopy;
 }

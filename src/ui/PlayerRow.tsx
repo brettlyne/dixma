@@ -13,7 +13,14 @@ const COLORS_TO_ANIMALS = {
 }
 
 const STATUS_TO_ICON = {
-    'picking-card': 'icon-picking-card@2x.png'
+    'picking-card': 'icon-picking-card@2x.png',
+    'done-with-action': 'icon-done-with-action@2x.png',
+    'voting': 'icon-voting@2x.png',
+    'scoring': 'icon-scoring@2x.png',
+    'storyteller-done-with-action': 'icon-storyteller-done-with-action@2x.png',
+    'storyteller-picking-card': 'icon-storyteller-picking-card@2x.png',
+    'storyteller': 'icon-storyteller@2x.png',
+    'storyteller-scoring': 'icon-storyteller-scoring@2x.png'
 }
 
 const PlayerRow = ({ color, name, status }) => {

@@ -4,17 +4,9 @@ import { useState } from 'react'
 import PlayerRow from './PlayerRow'
 import Settings from './Settings'
 
-const PickingCards = ({ pluginAction, players }) => {
+const Scoring = ({ pluginAction, players }) => {
 
     const [settingsOpen, setSettingsOpen] = useState(false);
-
-    let allPlayersReady = true;
-    for (let i = 0; i < players.length; i++) {
-        if (players[i].status.indexOf('picking-card') >= 0) {
-            allPlayersReady = false;
-            break;
-        }
-    }
 
     return (
         <>
@@ -26,8 +18,7 @@ const PickingCards = ({ pluginAction, players }) => {
             }
             <div className="ui-content">
                 <p className="phase-instructions">
-                    <strong>Storyteller:</strong> give a clue <br />
-                    <strong>Everyone:</strong> pick a card
+                    <strong>Everyone:</strong> move your player piece on the score track
             </p>
                 <div style={{ height: "8px" }}></div>
 
@@ -47,11 +38,7 @@ const PickingCards = ({ pluginAction, players }) => {
                 </div>
 
                 <div style={{ height: "16px" }}></div>
-                {allPlayersReady ?
-                    <button onClick={() => pluginAction('reveal-cards')} className='centered'>Reveal Cards</button> :
-                    <p className="action-status">You can reveal cards when <br /> all players are ready.</p>
-                }
-
+                <button onClick={() => pluginAction('new-round')} className='centered'>Reset & Begin Next Round</button>
                 <img
                     onClick={() => { setSettingsOpen(true) }}
                     src="https://brettlyne.github.io/dixma/icon-settings-button.svg"
@@ -65,5 +52,5 @@ const PickingCards = ({ pluginAction, players }) => {
     );
 };
 
-export default PickingCards;
+export default Scoring;
 

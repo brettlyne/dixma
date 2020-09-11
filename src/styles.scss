@@ -15,6 +15,11 @@ body {
     background: url("https://brettlyne.github.io/dixma/dixma-plugin-background@2x.jpg");
     background-size: cover;
     margin: 0;
+    overflow: hidden;
+}
+
+a {
+    cursor: pointer;
 }
 
 p {
@@ -51,6 +56,14 @@ button {
     background: #ee2c4c;
     &:hover {
         background: #de0327;
+    }
+    &.centered {
+        width: auto;
+        padding-left: 32px;
+        padding-right: 32px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
     }
 }
 
@@ -102,6 +115,23 @@ a {
     display: flex;
     justify-content: space-between;
     margin-right: 12px;
+}
+
+@keyframes settingsEnter {
+    from {
+        transform: translateY(80px);
+        opacity: 0;
+    }
+}
+.game-settings {
+    animation: settingsEnter 150ms ease-out;
+    position: absolute;
+    top: 88px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.94);
+    z-index: 1;
 }
 
 .player-table {
