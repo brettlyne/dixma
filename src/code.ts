@@ -35,16 +35,18 @@ let playerNodes = [];
 let currentStorytellerIndex = 0; // player index of current storyteller
 let gamePhase = PHASES.NO_GAME;
 
-
 // handle messages from plugin UI
 figma.ui.onmessage = (msg) => {
+    updatePluginStateFromDocument();
     if (msg.type === "testing") {
-        resetTokens();
+        // nextStoryteller();
+        // updateDocumentStateFromPlugin();
     }
     if (msg.type === "start-game") {
         if (gamePhase === PHASES.NO_GAME && piecesAreReady() && playersAreReady()) {
             // start the game
             gamePhase = PHASES.PICKING;
+            nextStoryteller(0);
             players.forEach(player => {
                 createPlayerPage(player);
             });
@@ -52,13 +54,13 @@ figma.ui.onmessage = (msg) => {
             updateDocumentStateFromPlugin();
         }
     }
-    if (msg.type === "reveal-cards") {
+    if (msg.type === "reveal-cards" && gamePhase === PHASES.PICKING) {
         moveCardsToGameBoard();
     }
-    if (msg.type === "reveal-tokens") {
+    if (msg.type === "reveal-tokens" && gamePhase === PHASES.VOTING) {
         moveTokensToGameBoard();
     }
-    if (msg.type === "new-round") {
+    if (msg.type === "new-round" && gamePhase === PHASES.SCORING) {
         clearCardsFromPlayArea();
         dealNewCards();
         resetTokens();
@@ -116,6 +118,11 @@ const playersAreReady = () => {
         figma.notify('Need at least 4 players to start a game.')
         return false;
     }
+    const playerNames = newPlayers.map(player => player.name);
+    if (playerNames.length !== new Set(playerNames).size) {
+        figma.notify('Duplicate names not allowed.')
+        return false;
+    }
     players = newPlayers;
     return true;
 }
@@ -155,18 +162,37 @@ const updatePluginStateFromDocument = () => {
 }
 
 const populatePlayerNodes = () => {
-    playerNodes = players.map(player => {
+    playerNodes = [];
+    for (let i = 0; i < players.length; i++) {
+        const player = players[i];
         const page = figma.root.findChild((child) => child.name === player.name);
+        if (!page) {
+            players.splice(i, 1);
+            updateDocumentStateFromPlugin()
+            populatePlayerNodes();
+            break;
+        }
         const selectedCardArea = page.findOne((child) => child.name === "Card Selection Area") as FrameNode;
         const selectedTokenArea = page.findOne((child) => child.name === "Token Selection Area") as FrameNode;
-        return { page, selectedCardArea, selectedTokenArea };
-    });
+        playerNodes.push({ page, selectedCardArea, selectedTokenArea });
+    }
 }
 
 const getPlayersWithStatus = () => {
-    return players.map((player, i) => {
+    const playersWithStatus = [];
+
+    for (let i = 0; i < players.length; i++) {
+        const player = players[i];
         const isStoryteller = (i === currentStorytellerIndex);
         const playerNode = playerNodes[i];
+
+        if (!playerNode.page || playerNode.page.removed) {  // page has been deleted -> remove player
+            players.splice(i, 1);
+            updateDocumentStateFromPlugin()
+            populatePlayerNodes();
+            return getPlayersWithStatus();
+        }
+
         let status;
 
         if (gamePhase === PHASES.PICKING) {
@@ -188,9 +214,9 @@ const getPlayersWithStatus = () => {
         if (gamePhase === PHASES.SCORING) {
             status = (isStoryteller ? 'storyteller-scoring' : 'scoring')
         }
-        return { ...player, status };
-    });
-
+        playersWithStatus.push({ ...player, status });
+    };
+    return playersWithStatus;
 }
 
 const createPlayerPage = (player) => {
@@ -445,8 +471,16 @@ const resetTokens = () => {
     })
 }
 
-const nextStoryteller = () => {
-    currentStorytellerIndex = (currentStorytellerIndex + 1) % players.length;
+const nextStoryteller = (newStoryteller?: number) => {
+    if (typeof newStoryteller == 'number') {
+        currentStorytellerIndex = newStoryteller;
+    } else {
+        currentStorytellerIndex = (currentStorytellerIndex + 1) % players.length
+    }
+    const currColor = players[currentStorytellerIndex].color;
+    const storytellerToken = dixmaBoardPage.findOne((child) => child.name === "Storyteller Badge") as TextNode;
+    const storytellerIdx = PLAYER_ORDER.indexOf(currColor);
+    storytellerToken.y = 102 + 44 * storytellerIdx;
 }
 
 const resetDealtCards = () => {

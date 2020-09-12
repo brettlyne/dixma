@@ -16,11 +16,10 @@ const WelcomeScreen = ({ pluginAction }) => {
             <button onClick={() => pluginAction('start-game')}>Start Game</button>
             <p><a onClick={() => pluginAction('reset-game-and-clear-players')} className="destructive">Reset game & clear player names</a></p>
             <p><a onClick={() => pluginAction('reset-game')} className="destructive">Reset game & keep player names</a></p>
-            <div style={{ height: "40px" }}></div>
-            <p>You can find the full rules on <br /> the <strong>How to Play page</strong>
-                {/* of the <br /> <a>Dixma Board Community File</a>. */}
-            .</p>
-        </div>
+            <div style={{ height: "60px" }}></div>
+            <p>You can find the full rules on <br /> the <strong>How to Play page</strong>.</p>
+            <p>Share feedback on <a rel="noopener noreferrer" target="_blank" href="https://github.com/brettlyne/dixma/issues">GitHub</a>.</p>
+        </div >
     );
 };
 

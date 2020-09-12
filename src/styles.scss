@@ -15,7 +15,6 @@ body {
     background: url("https://brettlyne.github.io/dixma/dixma-plugin-background@2x.jpg");
     background-size: cover;
     margin: 0;
-    overflow: hidden;
 }
 
 a {
@@ -123,15 +122,26 @@ a {
         opacity: 0;
     }
 }
-.game-settings {
-    animation: settingsEnter 150ms ease-out;
+.game-settings-container {
     position: absolute;
     top: 88px;
     left: 0;
     right: 0;
     bottom: 0;
+    overflow: hidden;
+}
+.game-settings {
+    animation: settingsEnter 150ms ease-out;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(255, 255, 255, 0.94);
     z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 .player-table {
