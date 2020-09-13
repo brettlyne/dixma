@@ -15,7 +15,7 @@ const Settings = ({ setSettingsOpen, pluginAction }) => {
                     <p className="header">Manage Players</p>
                     <p>Remove a player at any time by deleting their player page.</p>
                     <p>To add a new player, add them to the Players List, then click here:</p>
-                    <p><a>Create player page for new players</a></p>
+                    <p><a onClick={() => pluginAction('new-players')}>Create player page for new players</a></p>
                 </div>
                 <div>
                     <p>Share feedback on <a rel="noopener noreferrer" target="_blank" href="https://github.com/brettlyne/dixma/issues">GitHub</a>.</p>

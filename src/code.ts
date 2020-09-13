@@ -39,8 +39,7 @@ let gamePhase = PHASES.NO_GAME;
 figma.ui.onmessage = (msg) => {
     updatePluginStateFromDocument();
     if (msg.type === "testing") {
-        // nextStoryteller();
-        // updateDocumentStateFromPlugin();
+        moveTokensToGameBoard();
     }
     if (msg.type === "start-game") {
         if (gamePhase === PHASES.NO_GAME && piecesAreReady() && playersAreReady()) {
@@ -67,6 +66,18 @@ figma.ui.onmessage = (msg) => {
         nextStoryteller();
         gamePhase = PHASES.PICKING;
         updateDocumentStateFromPlugin();
+    }
+    if (msg.type === "new-players") {
+        const oldPlayerNames = players.map(player => player.name);
+        if (playersAreReady()) {
+            players.forEach(player => {
+                if (oldPlayerNames.indexOf(player.name) === -1) {
+                    createPlayerPage(player);
+                }
+            });
+            populatePlayerNodes();
+            updateDocumentStateFromPlugin();
+        }
     }
     if (msg.type === "reset-game") {
         resetGame();
@@ -390,6 +401,7 @@ const moveTokensToGameBoard = () => {
         if (currentStorytellerIndex === i) continue; // storyteller does not vote
         const selectedTokenArea = playerNodes[i].selectedTokenArea;
         const token = selectedTokenArea.findChild((child) => child.name === "Voting Token");
+        token.setPluginData("color", players[i].color);
         if (token) {
             tokensToMove.push(token);
         } else {
@@ -425,6 +437,18 @@ const placeTokenInGameBoard = (token, i) => {
     const voteIdx = parseInt(token.children[0].characters) - 1;
     token.x = CARDS_X_OFFSET + (voteIdx % 4) * CARDS_COL_WIDTH + (20 * (i % 7));
     token.y = (CARDS_Y_OFFSET + Math.floor(voteIdx / 4) * CARDS_ROW_HEIGHT + (20 * i)) - (80 * Math.floor(i / 7));
+
+    const color = token.getPluginData("color");
+    if (color) {
+        // Copy in player token from Components Page
+        const playerTokensFrame = componentsPage.findChild((child) => child.name === "Player Tokens") as FrameNode;
+        const playerToken = playerTokensFrame.findChild((child) => child.name === color).clone();
+        playerToken.resize(36, 36);
+        playerToken.x = 2;
+        playerToken.y = 2;
+        token.appendChild(playerToken);
+    }
+
     cardPlayFrame.appendChild(token);
 }
 
