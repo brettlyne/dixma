@@ -38,12 +38,12 @@ let gamePhase = PHASES.NO_GAME;
 // handle messages from plugin UI
 figma.ui.onmessage = (msg) => {
     updatePluginStateFromDocument();
-    if (msg.type === "testing") {
-        moveTokensToGameBoard();
-    }
+    // if (msg.type === "testing") {
+    // }
     if (msg.type === "start-game") {
         if (gamePhase === PHASES.NO_GAME && piecesAreReady() && playersAreReady()) {
             // start the game
+            setupPlayerPiecesOnGameBoard();
             gamePhase = PHASES.PICKING;
             nextStoryteller(0);
             players.forEach(player => {
@@ -70,9 +70,13 @@ figma.ui.onmessage = (msg) => {
     if (msg.type === "new-players") {
         const oldPlayerNames = players.map(player => player.name);
         if (playersAreReady()) {
-            players.forEach(player => {
+            players.forEach((player, i) => {
                 if (oldPlayerNames.indexOf(player.name) === -1) {
                     createPlayerPage(player);
+                    addPlayerPiece(player.color)
+                    if (i <= currentStorytellerIndex) {
+                        nextStoryteller();
+                    }
                 }
             });
             populatePlayerNodes();
@@ -324,7 +328,7 @@ const dealFirstHand = (playerPage, customPlayerBoard) => {
         playerPage.appendChild(randomImage);
 
         // Scale image to fit card slots
-        randomImage = scaleImage(randomImage, CARD_SIZE, CARD_SIZE);
+        scaleImage(randomImage, CARD_SIZE, CARD_SIZE);
         randomImage.x = cardSlotPosition[0][2] + CARD_SLOT_PADDING;
         randomImage.y = cardSlotPosition[1][2] + CARD_SLOT_PADDING;
         randomImage.name = CARD_NAME;
@@ -347,7 +351,7 @@ const dealNewCards = () => {
         const firstCardSlot = cardSlots[5].absoluteTransform;
         let newImage = getRandomImageFromDeck();
         page.appendChild(newImage);
-        newImage = scaleImage(newImage, CARD_SIZE, CARD_SIZE);
+        scaleImage(newImage, CARD_SIZE, CARD_SIZE);
         newImage.x = firstCardSlot[0][2] + CARD_SLOT_PADDING;
         newImage.y = firstCardSlot[1][2] + CARD_SLOT_PADDING;
         newImage.name = CARD_NAME;
@@ -360,7 +364,7 @@ const getRandomImageFromDeck = () => {
         Math.floor(Math.random() * deckImages.length)
     ] as RectangleNode;
     if (randomImage.getPluginData("dealt") === "true") {
-        randomImage = getRandomImageFromDeck();
+        return getRandomImageFromDeck();
     } else {
         randomImage.setPluginData("dealt", "true");
     }
@@ -474,6 +478,20 @@ const clearCardsFromPlayArea = () => {
     });
 }
 
+const setupPlayerPiecesOnGameBoard = () => {
+    players.forEach(player => {
+        addPlayerPiece(player.color)
+    });
+}
+
+const addPlayerPiece = (color) => {
+    const playerPiecesFrame = dixmaBoardPage.findChild((child) => child.name === "Player Pieces") as FrameNode;
+    const playerPiece = playerPiecesFrame.findChild((child) => child.name === color).clone();
+    dixmaBoardPage.appendChild(playerPiece);
+    playerPiece.x += playerPiecesFrame.x;
+    playerPiece.y += playerPiecesFrame.y;
+}
+
 const resetTokens = () => {
     const tokensOnBoard = cardPlayFrame.findAll((child) => child.name === "Voting Token");
     tokensOnBoard.forEach(token => { token.remove() });
@@ -510,7 +528,10 @@ const nextStoryteller = (newStoryteller?: number) => {
 const resetDealtCards = () => {
     deckPage.children.forEach((image) => image.setPluginData("dealt", "false"));
 }
-
+const clearPlayerPiecesFromBoard = () => {
+    const playerPieces = dixmaBoardPage.findChildren(c => (PLAYER_ORDER.indexOf(c.name) > -1))
+    playerPieces.forEach(piece => { piece.remove(); })
+}
 const clearPlayerNames = () => {
     playersFrame.children.forEach((child) => {
         // Ignore instruction text nodes, we only need to look at the players
@@ -535,6 +556,7 @@ const resetGame = () => {
     clearCardsFromPlayArea();
     deletePlayerPages();
     resetDealtCards();
+    clearPlayerPiecesFromBoard();
 }
 
 
@@ -571,7 +593,6 @@ const scaleImage = (image, maxWidth, maxHeight) => {
             image.resize(maxWidth, newHeight);
         }
     }
-    return image;
 }
 
 function deepEqual(object1, object2) {

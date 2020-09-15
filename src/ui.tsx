@@ -54,7 +54,7 @@ const App = () => {
                 style={{ width: '100%' }}
                 src={`https://brettlyne.github.io/dixma/dixma-plugin-header-logo.png`} alt="dixma logo"
             />
-            <a onClick={() => pluginAction('testing')}>testing</a>
+            {/* <a onClick={() => pluginAction('testing')}>testing</a> */}
             {(gamePhase === PHASES.NO_GAME) &&
                 <WelcomeScreen pluginAction={pluginAction} />
             }
