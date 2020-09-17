@@ -10,7 +10,7 @@ const WelcomeScreen = ({ pluginAction }) => {
             <p className="header">To get started... </p>
             <ol>
                 <li>Duplicate the <a href="">Dixma Board</a> and invite 4 to 12 players.</li>
-                <li>Enter players names where it says “Start Here” on the Dixma Board page + have each player move their bunny to scoring track.</li>
+                <li>Enter players names where it says “Start Here” on the Dixma Board page.</li>
                 <li>Click Start Game below!</li>
             </ol>
             <button onClick={() => pluginAction('start-game')}>Start Game</button>
