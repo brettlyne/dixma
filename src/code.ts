@@ -182,9 +182,7 @@ const populatePlayerNodes = () => {
         const player = players[i];
         const page = figma.root.findChild((child) => child.name === player.name);
         if (!page) {
-            players.splice(i, 1);
-            updateDocumentStateFromPlugin()
-            populatePlayerNodes();
+            removePlayerByIndex(i);
             break;
         }
         const selectedCardArea = page.findOne((child) => child.name === "Card Selection Area") as FrameNode;
@@ -202,9 +200,7 @@ const getPlayersWithStatus = () => {
         const playerNode = playerNodes[i];
 
         if (!playerNode.page || playerNode.page.removed) {  // page has been deleted -> remove player
-            players.splice(i, 1);
-            updateDocumentStateFromPlugin()
-            populatePlayerNodes();
+            removePlayerByIndex(i);
             return getPlayersWithStatus();
         }
 
@@ -232,6 +228,16 @@ const getPlayersWithStatus = () => {
         playersWithStatus.push({ ...player, status });
     };
     return playersWithStatus;
+}
+
+// called to remove a player from the game state (probably because they no longer have a player page)
+const removePlayerByIndex = (i) => {
+    players.splice(i, 1);
+    if (i < currentStorytellerIndex) {
+        nextStoryteller(currentStorytellerIndex - 1);
+    }
+    updateDocumentStateFromPlugin()
+    populatePlayerNodes();
 }
 
 const createPlayerPage = (player) => {
