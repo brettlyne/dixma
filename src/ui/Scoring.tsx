@@ -38,7 +38,7 @@ const Scoring = ({ pluginAction, players }) => {
                 </div>
 
                 <div style={{ height: "16px" }}></div>
-                <button onClick={() => pluginAction('new-round')} className='centered'>Reset & Begin Next Round</button>
+                <button onClick={() => pluginAction('new-round')} className='centered'>Begin Next Round</button>
                 <img
                     onClick={() => { setSettingsOpen(true) }}
                     src="https://brettlyne.github.io/dixma/icon-settings-button.svg"
