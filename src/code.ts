@@ -332,8 +332,6 @@ const dealFirstHand = (playerPage, customPlayerBoard) => {
         const cardSlot = cardSlots[i] as InstanceNode;
         const cardSlotPosition = cardSlot.absoluteTransform;
         playerPage.appendChild(randomImage);
-
-        // Scale image to fit card slots
         scaleImage(randomImage, CARD_SIZE, CARD_SIZE);
         randomImage.x = cardSlotPosition[0][2] + CARD_SLOT_PADDING;
         randomImage.y = cardSlotPosition[1][2] + CARD_SLOT_PADDING;
@@ -342,10 +340,10 @@ const dealFirstHand = (playerPage, customPlayerBoard) => {
 }
 
 const dealNewCards = () => {
-    playerNodes.forEach(node => {
-        const page = node.page;
-        const cards = page.findChildren((child) => child.name === CARD_NAME);
-        const cardSlots = page.findAll((child) => child.name === "Card Inner Placeholder");
+    playerNodes.forEach(playerNode => {
+        const playerPage = playerNode.page;
+        const cards = playerPage.findChildren((child) => child.name === CARD_NAME);
+        const cardSlots = playerPage.findAll((child) => child.name === "Card Inner Placeholder");
 
         cards.forEach((card, index) => {
             const cardSlot = cardSlots[index] as InstanceNode;
@@ -356,7 +354,7 @@ const dealNewCards = () => {
 
         const firstCardSlot = cardSlots[5].absoluteTransform;
         let newImage = getRandomImageFromDeck();
-        page.appendChild(newImage);
+        playerPage.appendChild(newImage);
         scaleImage(newImage, CARD_SIZE, CARD_SIZE);
         newImage.x = firstCardSlot[0][2] + CARD_SLOT_PADDING;
         newImage.y = firstCardSlot[1][2] + CARD_SLOT_PADDING;
