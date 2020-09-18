@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dixma Setup</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Averia+Sans+Libre:wght@700&family=Solway:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(197.71deg, #F6EDBB 0.6%, #EFC0A6 40.98%, #ECB79F 58.08%, #EC8779 100%);
+            font-family: Solway;
+            padding-top: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1,
+        h2 {
+            font-family: 'Averia Sans Libre';
+            font-weight: 500;
+        }
+
+        h1 {
+            margin-top: 10px;
+            font-size: 28px;
+        }
+
+        h2 {
+            margin-top: 24px;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        em {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0) 65%, #ffd855 65%);
+        }
+
+        ul,
+        ol {
+            padding-left: 16px;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        ol li {
+            margin-left: 2px;
+            padding-left: 2px;
+        }
+
+        .container {
+            width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <h1>Installing the Dixma Plugin</h1>
+        <p>The plugin should be available in the Figma community soon. Until then, you can install manually by
+            following these instructions.</p>
+        <p><em>This method only works for the Figma desktop client.</em></p>
+    </div>
+
+    <div class="container">
+        <h2 style="margin-top: 8px">1. Download Plugin Files</h2>
+        <ol>
+            <li>Go to <a rel="noopener noreferrer" target="_blank"
+                    href="https://github.com/brettlyne/dixma">https://github.com/brettlyne/dixma</a></li>
+            <li>Click the green "Code" button</li>
+            <li>Click the last option: “Download Zip”</li>
+            <li>Unzip the downloaded file</li>
+        </ol>
+
+        <h2>2. Install the Plugin</h2>
+        <p>In the Figma menu go to:
+        <ul>
+            <li>Plugins ></li>
+            <li>Development ></li>
+            <li>New Plugin</li>
+        </ul>
+        </p>
+        <p>Choose “Click to choose a manifest.json file”</p>
+        <p>Select the manifest.json file in the folder you just unzipped</p>
+
+        <h2>3. Launch the Plugin</h2>
+        <p>
+            In the Figma menu go to:
+        <ul>
+            <li>Plugins ></li>
+            <li>Development ></li>
+            <li>Dixma</li>
+        </ul>
+        </p>
+    </div>
+</body>
+
+</html>
