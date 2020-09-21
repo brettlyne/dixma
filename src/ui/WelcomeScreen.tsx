@@ -9,7 +9,7 @@ const WelcomeScreen = ({ pluginAction }) => {
             <div style={{ height: "32px" }}></div>
             <p className="header">To get started... </p>
             <ol>
-                <li>Duplicate the <a href="">Dixma Board</a> and invite 4 to 12 players.</li>
+                <li>Duplicate the <a href="https://www.figma.com/community/file/889925301071649823">Dixma Template</a> and invite 4 to 12 players.</li>
                 <li>Enter players names where it says “Start Here” on the Dixma Board page.</li>
                 <li>Click Start Game below!</li>
             </ol>
