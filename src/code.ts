@@ -35,11 +35,12 @@ let playerNodes = [];
 let currentStorytellerIndex = 0; // player index of current storyteller
 let gamePhase = PHASES.NO_GAME;
 
+
 // handle messages from plugin UI
 figma.ui.onmessage = (msg) => {
     updatePluginStateFromDocument();
-    // if (msg.type === "testing") {
-    // }
+    if (msg.type === "testing") {
+    }
     if (msg.type === "start-game") {
         if (gamePhase === PHASES.NO_GAME && piecesAreReady() && playersAreReady()) {
             // start the game
@@ -50,6 +51,7 @@ figma.ui.onmessage = (msg) => {
                 createPlayerPage(player);
             });
             populatePlayerNodes();
+            dealCards();
             updateDocumentStateFromPlugin();
         }
     }
@@ -61,7 +63,7 @@ figma.ui.onmessage = (msg) => {
     }
     if (msg.type === "new-round" && gamePhase === PHASES.SCORING) {
         clearCardsFromPlayArea();
-        dealNewCards();
+        dealCards();
         resetTokens();
         nextStoryteller();
         gamePhase = PHASES.PICKING;
@@ -72,6 +74,7 @@ figma.ui.onmessage = (msg) => {
         if (playersAreReady()) {
             players.forEach((player, i) => {
                 if (oldPlayerNames.indexOf(player.name) === -1) {
+                    figma.notify(`${player.name} will get cards at the beginning of the next round.`)
                     createPlayerPage(player);
                     addPlayerPiece(player.color)
                     if (i <= currentStorytellerIndex) {
@@ -80,6 +83,22 @@ figma.ui.onmessage = (msg) => {
                 }
             });
             populatePlayerNodes();
+            dealCards();
+            updateDocumentStateFromPlugin();
+        }
+    }
+    console.log('a');
+
+    if (msg.type.startsWith('set-storyteller-index-')) {
+        console.log('b');
+
+        const newStoryteller = parseInt(msg.type.replace('set-storyteller-index-', ''));
+        console.log(newStoryteller);
+
+        if (!isNaN(newStoryteller) && newStoryteller >= 0 && newStoryteller < players.length) {
+            console.log('c')
+
+            nextStoryteller(newStoryteller);
             updateDocumentStateFromPlugin();
         }
     }
@@ -251,8 +270,7 @@ const createPlayerPage = (player) => {
 
     moveVotingTokens(playerPage, customPlayerBoard);
     setUpSelectionAreas(playerPage, customPlayerBoard);
-    dealFirstHand(playerPage, customPlayerBoard);
-
+    // dealFirstHand(playerPage, customPlayerBoard);
     return playerPage;
 }
 
@@ -322,44 +340,31 @@ function setUpSelectionAreas(playerPage, customPlayerBoard) {
     playerPage.appendChild(tokenSelectionArea);
 }
 
-const dealFirstHand = (playerPage, customPlayerBoard) => {
-    const cardSlots = customPlayerBoard.findAll(
-        (child) => child.name === "Card Inner Placeholder"
-    );
-
-    for (let i = 0; i < 6; i++) {
-        let randomImage = getRandomImageFromDeck();
-        const cardSlot = cardSlots[i] as InstanceNode;
-        const cardSlotPosition = cardSlot.absoluteTransform;
-        playerPage.appendChild(randomImage);
-        scaleImage(randomImage, CARD_SIZE, CARD_SIZE);
-        randomImage.x = cardSlotPosition[0][2] + CARD_SLOT_PADDING;
-        randomImage.y = cardSlotPosition[1][2] + CARD_SLOT_PADDING;
-        randomImage.name = CARD_NAME;
-    }
-}
-
-const dealNewCards = () => {
+const HAND_X = 87;
+const HAND_Y = 316;
+const HAND_SPACING = 174;
+const dealCards = () => {
     playerNodes.forEach(playerNode => {
         const playerPage = playerNode.page;
         const cards = playerPage.findChildren((child) => child.name === CARD_NAME);
-        const cardSlots = playerPage.findAll((child) => child.name === "Card Inner Placeholder");
+        for (let i = cards.length; i < 6; i++) {
+            let randomImage = getRandomImageFromDeck();
+            const newCard = componentsPage.findChild((child) => child.name === "CARD_TEMPLATE").clone();
+            const imageFill = { ...newCard.fills[1] };
+            imageFill.imageHash = randomImage.fills[0].imageHash;
+            const newFills = [newCard.fills[0], imageFill]
+            newCard.fills = newFills;
+            newCard.name = CARD_NAME;
+            playerPage.appendChild(newCard);
+            cards.push(newCard);
+        }
+        cards.sort((a, b) => (a.x - b.x));
+        cards.forEach((card, i) => {
+            card.x = HAND_X + i * HAND_SPACING;
+            card.y = HAND_Y;
+        })
+    });
 
-        cards.forEach((card, index) => {
-            const cardSlot = cardSlots[index] as InstanceNode;
-            const cardSlotPosition = cardSlot.absoluteTransform;
-            card.x = cardSlotPosition[0][2] + CARD_SLOT_PADDING;
-            card.y = cardSlotPosition[1][2] + CARD_SLOT_PADDING;
-        });
-
-        const firstCardSlot = cardSlots[5].absoluteTransform;
-        let newImage = getRandomImageFromDeck();
-        playerPage.appendChild(newImage);
-        scaleImage(newImage, CARD_SIZE, CARD_SIZE);
-        newImage.x = firstCardSlot[0][2] + CARD_SLOT_PADDING;
-        newImage.y = firstCardSlot[1][2] + CARD_SLOT_PADDING;
-        newImage.name = CARD_NAME;
-    })
 }
 
 const getRandomImageFromDeck = () => {
@@ -372,7 +377,7 @@ const getRandomImageFromDeck = () => {
     } else {
         randomImage.setPluginData("dealt", "true");
     }
-    return randomImage.clone();
+    return randomImage;
 }
 
 const moveCardsToGameBoard = () => {

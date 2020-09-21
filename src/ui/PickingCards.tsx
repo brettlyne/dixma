@@ -21,6 +21,7 @@ const PickingCards = ({ pluginAction, players }) => {
             {settingsOpen &&
                 <Settings
                     pluginAction={pluginAction}
+                    players={players}
                     setSettingsOpen={setSettingsOpen}
                 />
             }

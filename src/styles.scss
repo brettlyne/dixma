@@ -80,15 +80,6 @@ a {
     }
 }
 
-.header {
-    font-family: "Averia Sans Libre";
-    font-style: normal;
-    font-weight: bold;
-    font-size: 18px;
-    line-height: 20px;
-    letter-spacing: 0.01em;
-}
-
 .phase-instructions,
 .phase-instructions strong {
     font-size: 14px;
@@ -142,6 +133,17 @@ a {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    p,
+    a,
+    label,
+    select {
+        font-size: 14px;
+        line-height: 18px;
+    }
+    select {
+        position: relative;
+        top: -2px;
+    }
 }
 
 .player-table {
@@ -195,4 +197,14 @@ a {
     &:hover {
         transform: translateX(-50%) scale(1.06);
     }
+}
+
+.header,
+p.header {
+    font-family: "Averia Sans Libre";
+    font-style: normal;
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 20px;
+    letter-spacing: 0.01em;
 }

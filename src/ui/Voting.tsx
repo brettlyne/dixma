@@ -21,6 +21,7 @@ const Voting = ({ pluginAction, players }) => {
             {settingsOpen &&
                 <Settings
                     pluginAction={pluginAction}
+                    players={players}
                     setSettingsOpen={setSettingsOpen}
                 />
             }
