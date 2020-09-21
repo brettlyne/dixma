@@ -167,11 +167,22 @@ const updateDocumentStateFromPlugin = () => {
     figma.root.setPluginData("currentStorytellerIndex", `${currentStorytellerIndex}`);
 };
 
-const updatePluginStateFromDocument = () => {
-    const newPlayers = JSON.parse(figma.root.getPluginData('players'));
-    const newGamePhase = figma.root.getPluginData('gamePhase');
-    const newCurrentStorytellerIndex = parseInt(figma.root.getPluginData('currentStorytellerIndex'));
+const resetDocumentState = () => {
+    figma.root.setPluginData("players", JSON.stringify([]));
+    figma.root.setPluginData("gamePhase", PHASES.NO_GAME);
+    figma.root.setPluginData("currentStorytellerIndex", '0');
+};
 
+
+const updatePluginStateFromDocument = () => {
+    const playerData = figma.root.getPluginData('players')
+    const newGamePhase = figma.root.getPluginData('gamePhase');
+    if (!playerData || !newGamePhase) {
+        resetDocumentState();
+        return;
+    }
+    const newPlayers = JSON.parse(playerData);
+    const newCurrentStorytellerIndex = parseInt(figma.root.getPluginData('currentStorytellerIndex'));
     if (
         gamePhase !== newGamePhase ||
         currentStorytellerIndex !== newCurrentStorytellerIndex
