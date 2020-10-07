@@ -87,17 +87,9 @@ figma.ui.onmessage = (msg) => {
             updateDocumentStateFromPlugin();
         }
     }
-    console.log('a');
-
     if (msg.type.startsWith('set-storyteller-index-')) {
-        console.log('b');
-
         const newStoryteller = parseInt(msg.type.replace('set-storyteller-index-', ''));
-        console.log(newStoryteller);
-
         if (!isNaN(newStoryteller) && newStoryteller >= 0 && newStoryteller < players.length) {
-            console.log('c')
-
             nextStoryteller(newStoryteller);
             updateDocumentStateFromPlugin();
         }
@@ -571,8 +563,8 @@ const resetGame = () => {
     players = [];
     playerNodes = [];
     currentStorytellerIndex = 0;
+    resetTokens();
     updateDocumentStateFromPlugin();
-
     clearCardsFromPlayArea();
     deletePlayerPages();
     resetDealtCards();
