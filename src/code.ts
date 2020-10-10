@@ -347,11 +347,14 @@ const HAND_X = 87;
 const HAND_Y = 316;
 const HAND_SPACING = 174;
 const dealCards = () => {
+    let availableCards = deckPage.children.filter(card => !(card.getPluginData("dealt") && card.getPluginData("dealt") === "true"));
     playerNodes.forEach(playerNode => {
         const playerPage = playerNode.page;
         const cards = playerPage.findChildren((child) => child.name === CARD_NAME);
         for (let i = cards.length; i < 6; i++) {
-            let randomImage = getRandomImageFromDeck();
+            const randomIndex = Math.floor(Math.random() * availableCards.length)
+            const randomImage = availableCards.splice(randomIndex, 1)[0] as RectangleNode;
+            randomImage.setPluginData("dealt", "true");
             const newCard = componentsPage.findChild((child) => child.name === "CARD_TEMPLATE").clone();
             const imageFill = { ...newCard.fills[1] };
             imageFill.imageHash = randomImage.fills[0].imageHash;
@@ -368,19 +371,6 @@ const dealCards = () => {
         })
     });
 
-}
-
-const getRandomImageFromDeck = () => {
-    const deckImages = deckPage.children;
-    let randomImage = deckImages[
-        Math.floor(Math.random() * deckImages.length)
-    ] as RectangleNode;
-    if (randomImage.getPluginData("dealt") === "true") {
-        return getRandomImageFromDeck();
-    } else {
-        randomImage.setPluginData("dealt", "true");
-    }
-    return randomImage;
 }
 
 const moveCardsToGameBoard = () => {
