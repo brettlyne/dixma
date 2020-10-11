@@ -348,6 +348,14 @@ const HAND_Y = 316;
 const HAND_SPACING = 174;
 const dealCards = () => {
     let availableCards = deckPage.children.filter(card => !(card.getPluginData("dealt") && card.getPluginData("dealt") === "true"));
+    availableCards = availableCards.filter((card, index) => {
+        if (availableCards.findIndex(c2 => c2.name === card.name) === index) {
+            return true;
+        } else {
+            console.log(card.name, 'is a duplicate card. Each card must have a unique name.');
+            return false;
+        }
+    })
     playerNodes.forEach(playerNode => {
         const playerPage = playerNode.page;
         const cards = playerPage.findChildren((child) => child.name === CARD_NAME);
